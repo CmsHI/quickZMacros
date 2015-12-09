@@ -3,6 +3,7 @@
 *.log
 *.bin
 *.exe
+*.pcm
 
 # output data
 *.root
