@@ -227,6 +227,8 @@ void ggHistos(TString infilename="HiForest.root", TString outfilename="Zevents.r
        }
     }
    } //end of electron loop
+   
+   if( flagEle==0 && flagMu==0 ) continue;
 
    for(int ij=0; ij<nref; ij++) {
 
@@ -246,7 +248,7 @@ void ggHistos(TString infilename="HiForest.root", TString outfilename="Zevents.r
 
    } //end of jet loop
 
-   if(flagMu || flagEle) ztree->Fill();
+   ztree->Fill();
 
  } //end of loop over events
 
