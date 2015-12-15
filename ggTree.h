@@ -34,9 +34,9 @@ float getDphi(float phi1, float phi2) {
 }
 
 //variables branches in ggNtuple
-   Int_t           run;
-   Long64_t        event;
-   Int_t           lumis;
+   UInt_t           run;
+   ULong64_t        event;
+   UInt_t           lumis;
    Bool_t          isData;
    Int_t           nEle;
    vector<int>     *eleCharge;

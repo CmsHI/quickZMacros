@@ -64,7 +64,7 @@
    Float_t         svtxpt[300];   //[nref]
    Int_t           nIPtrk[300];   //[nref]
    Int_t           nselIPtrk[300];   //[nref]
-   Int_t           nIP;
+   /*Int_t           nIP;
    Int_t           ipJetIndex[30000];   //[nIP]
    Float_t         ipPt[30000];   //[nIP]
    Float_t         ipProb0[30000];   //[nIP]
@@ -75,7 +75,7 @@
    Float_t         ip3dSig[30000];   //[nIP]
    Float_t         ipDist2Jet[30000];   //[nIP]
    Float_t         ipDist2JetSig[30000];   //[nIP]
-   Float_t         ipClosest2Jet[30000];   //[nIP]
+   Float_t         ipClosest2Jet[30000];   //[nIP]*/
    Float_t         mue[300];   //[nref]
    Float_t         mupt[300];   //[nref]
    Float_t         mueta[300];   //[nref]
@@ -152,7 +152,7 @@ void initjetTree(TTree *tree) {
    tree->SetBranchAddress("svtxpt", svtxpt);
    tree->SetBranchAddress("nIPtrk", nIPtrk);
    tree->SetBranchAddress("nselIPtrk", nselIPtrk);
-   tree->SetBranchAddress("nIP", &nIP);
+   /*tree->SetBranchAddress("nIP", &nIP);
    tree->SetBranchAddress("ipJetIndex", ipJetIndex);
    tree->SetBranchAddress("ipPt", ipPt);
    tree->SetBranchAddress("ipProb0", ipProb0);
@@ -163,7 +163,7 @@ void initjetTree(TTree *tree) {
    tree->SetBranchAddress("ip3dSig", ip3dSig);
    tree->SetBranchAddress("ipDist2Jet", ipDist2Jet);
    tree->SetBranchAddress("ipDist2JetSig", ipDist2JetSig);
-   tree->SetBranchAddress("ipClosest2Jet", ipClosest2Jet);
+   tree->SetBranchAddress("ipClosest2Jet", ipClosest2Jet);*/
    tree->SetBranchAddress("mue", mue);
    tree->SetBranchAddress("mupt", mupt);
    tree->SetBranchAddress("mueta", mueta);

@@ -113,26 +113,26 @@ void ggHistos(TString infilename="HiForest.root", TString outfilename="Zevents.r
 
  TTree *inggTree = (TTree*)fin.Get("ggHiNtuplizer/EventTree");
  if(!inggTree){
-    cout<<"Could not access tree!"<<endl;
+    cout<<"Could not access gg tree!"<<endl;
     return;
  }
  initggTree(inggTree);
 
  TTree *injetTree;
  if(pp) injetTree = (TTree*)fin.Get("ak4PFJetAnalyzer/t");
- else injetTree = (TTree*)fin.Get("akPu4CaloJetAnalyzer/t");
+ else injetTree = (TTree*)fin.Get("akPu4PFJetAnalyzer/t");
  if(!injetTree){
-    cout<<"Could not access tree!"<<endl;
+    cout<<"Could not access jet tree!"<<endl;
     return;
  }
  initjetTree(injetTree);
 
- /*TTree *inevtTree = (TTree*)fin.Get("hiEvtAnalyzer/HiTree");
+ TTree *inevtTree = (TTree*)fin.Get("hiEvtAnalyzer/HiTree");
  if(!inevtTree){
-    cout<<"Could not access tree!"<<endl;
+    cout<<"Could not access event tree!"<<endl;
     return;
  }
- inevtTree->SetBranchAddress("hiBin", &hiBin);*/
+ inevtTree->SetBranchAddress("hiBin", &hiBin);
 
  int nEv = inggTree->GetEntries();
 
@@ -140,10 +140,9 @@ void ggHistos(TString infilename="HiForest.root", TString outfilename="Zevents.r
 
    inggTree->GetEntry(j);
    injetTree->GetEntry(j);
-   //inevtTree->GetEntry(j);
+   inevtTree->GetEntry(j);
    if(j%20000 == 0) cout << "Processing event: " << j << endl;
    bool flagMu = 0; bool flagEle = 0;
-   njet = 0;
 
    TLorentzVector muon1, muon2;
    TLorentzVector ele1, ele2;
@@ -228,13 +227,23 @@ void ggHistos(TString infilename="HiForest.root", TString outfilename="Zevents.r
     }
    } //end of electron loop
    
-   if( flagEle==0 && flagMu==0 ) continue;
+   if( flagEle==0 && flagMu==0 ) continue; //if not Z event move on
 
+   njet = 0;
    for(int ij=0; ij<nref; ij++) {
 
-     float dR1 = sqrt( (muon1.Eta()-jteta[ij])*(muon1.Eta()-jteta[ij]) + getDphi(muon1.Phi(),jtphi[ij])*getDphi(muon1.Phi(),jtphi[ij]) );
-     float dR2 = sqrt( (muon2.Eta()-jteta[ij])*(muon2.Eta()-jteta[ij]) + getDphi(muon2.Phi(),jtphi[ij])*getDphi(muon2.Phi(),jtphi[ij]) );
-     if(flagMu && (dR1 < 0.1 || dR2 < 0.1)) continue;
+     if(flagMu) {
+       float dR1 = sqrt( (muon1.Eta()-jteta[ij])*(muon1.Eta()-jteta[ij]) + getDphi(muon1.Phi(),jtphi[ij])*getDphi(muon1.Phi(),jtphi[ij]) );
+       float dR2 = sqrt( (muon2.Eta()-jteta[ij])*(muon2.Eta()-jteta[ij]) + getDphi(muon2.Phi(),jtphi[ij])*getDphi(muon2.Phi(),jtphi[ij]) );
+       if(dR1 < 0.4 || dR2 < 0.4) continue; //jets that are equal to the muon rejected
+     }
+
+     if(flagEle) {
+       float dR1 = sqrt( (ele1.Eta()-jteta[ij])*(ele1.Eta()-jteta[ij]) + getDphi(ele1.Phi(),jtphi[ij])*getDphi(ele1.Phi(),jtphi[ij]) );
+       float dR2 = sqrt( (ele2.Eta()-jteta[ij])*(ele2.Eta()-jteta[ij]) + getDphi(ele2.Phi(),jtphi[ij])*getDphi(ele2.Phi(),jtphi[ij]) );
+       if(dR1 < 0.4 || dR2 < 0.4) continue; //jets that are equal to the electron rejected
+     }
+
 
      if(jtpt[ij]>30) {
 
