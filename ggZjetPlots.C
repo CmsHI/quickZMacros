@@ -87,6 +87,7 @@ void ggZjetPlots(bool pp = 1, int mu = 1, float ptcutZ = 40) {
  TH2F *dPhidEta = new TH2F("dPhidEta",";|#Delta#eta_{Zjet}|;#Delta#phi_{Zjet}",25,0,5,30,0,pi);
  TH1F *xZjet = new TH1F("xZjet",";p_{T}^{jet} / p_{T}^{Z};Counts",10,0,2);
  //TH1F *xZjetNear = new TH1F("xZjetNear",";p_{T}^{jet} / p_{T}^{Z};Counts",10,0,2);
+ TH1F *nJetZcut = new TH1F("nJetZcut",";number of jets;Counts",10,0,10);
 
  if(mu != 1) {
    hZmass->GetXaxis()->SetTitle("M^{ee} (GeV)");
@@ -100,14 +101,13 @@ void ggZjetPlots(bool pp = 1, int mu = 1, float ptcutZ = 40) {
    if(Zcharge != 0 || Ztype != mu) continue;
    if(!pp) hZcent->Fill(hiBin);
 
-   hZmass->Fill(Zmass);
-
    if(Zpt < ptcutZ || Zmass < 80 || Zmass > 110) continue;
 
-
+   hZmass->Fill(Zmass);
    hZpt->Fill(Zpt);
    hZy->Fill(Zrapidity);
    nData++;
+   int nJets = 0;
 
    for(int ij=0; ij<njet; ij++) {
 
@@ -121,8 +121,11 @@ void ggZjetPlots(bool pp = 1, int mu = 1, float ptcutZ = 40) {
      float xj = jetpt[ij]/Zpt;
      if(dphi>2*pi/3) xZjet->Fill(xj);
      //else xZjetNear->Fill(xj);
+     nJets++;
 
    }
+
+   nJetZcut->Fill(nJets);
 
  }
 
@@ -137,6 +140,7 @@ void ggZjetPlots(bool pp = 1, int mu = 1, float ptcutZ = 40) {
  TH2F *dPhidEtaMC = new TH2F("dPhidEtaMC",";|#Delta#eta_{Zjet}|;#Delta#phi_{Zjet}",25,0,5,30,0,pi);
  TH1F *xZjetMC = new TH1F("xZjetMC",";p_{T}^{jet} / p_{T}^{Z};Counts",10,0,2);
  //TH1F *xZjetNearMC = new TH1F("xZjetNearMC",";p_{T}^{jet} / p_{T}^{Z};Counts",10,0,2);
+ TH1F *nJetZcutMC = new TH1F("nJetZcutMC",";number of jets;Counts",10,0,10);
 
  hZmassMC->SetLineColor(color);
  hZptMC->SetLineColor(color);
@@ -145,6 +149,7 @@ void ggZjetPlots(bool pp = 1, int mu = 1, float ptcutZ = 40) {
  dEtaZjetMC->SetLineColor(color);
  xZjetMC->SetLineColor(color);
  //xZjetNearMC->SetLineColor(kCyan);
+ nJetZcutMC->SetLineColor(color);
 
  if(mu != 1) {
    hZmassMC->GetXaxis()->SetTitle("M^{ee} (GeV)");
@@ -157,14 +162,13 @@ void ggZjetPlots(bool pp = 1, int mu = 1, float ptcutZ = 40) {
    ztreeMC->GetEntry(j);
    if(Zcharge != 0 || Ztype != mu) continue;
 
-   hZmassMC->Fill(Zmass);
-
    if(Zpt < ptcutZ || Zmass < 80 || Zmass > 110) continue;
 
-
+   hZmassMC->Fill(Zmass);
    hZptMC->Fill(Zpt);
    hZyMC->Fill(Zrapidity);
    nMC++;
+   int nJets = 0;
 
    for(int ij=0; ij<njet; ij++) {
 
@@ -178,8 +182,11 @@ void ggZjetPlots(bool pp = 1, int mu = 1, float ptcutZ = 40) {
      float xj = jetpt[ij]/Zpt;
      if(dphi>2*pi/3) xZjetMC->Fill(xj);
      //else xZjetNearMC->Fill(xj);
+     nJets++;
 
    }
+
+   nJetZcutMC->Fill(nJets);
 
  }
 
@@ -190,6 +197,7 @@ void ggZjetPlots(bool pp = 1, int mu = 1, float ptcutZ = 40) {
  dEtaZjetMC->Scale(double(nData)/double(nMC));
  xZjetMC->Scale(double(nData)/double(nMC));
  //xZjetNearMC->Scale(double(nData)/double(nMC));
+ nJetZcutMC->Scale(double(nData)/double(nMC));
 
  if(!pp) {
    float Npart[nCentBins] = {358.8,264.3,189.2,131.4,86.94,21.85};
@@ -223,12 +231,6 @@ void ggZjetPlots(bool pp = 1, int mu = 1, float ptcutZ = 40) {
  tx->DrawLatex(0.63,0.86,"80 < m^{Z} < 110 GeV");
  tx->DrawLatex(0.63,0.80,Form("p_{T}^{Z} > %g GeV",ptcutZ));
 
- TCanvas *c1b = new TCanvas();
- hZmassMC->DrawNormalized("hist");
- hZmass->DrawNormalized("ep same");
- if(pp) tx->DrawLatex(0.13,0.94,"13 pb^{-1} (pp 5 TeV)");
- else   tx->DrawLatex(0.13,0.94,"Express (PbPb 5 TeV)");
-
  TCanvas *c2 = new TCanvas();
  hZptMC->Draw("hist");
  hZpt->Draw("ep same");
@@ -246,6 +248,18 @@ void ggZjetPlots(bool pp = 1, int mu = 1, float ptcutZ = 40) {
  tx->DrawLatex(0.63,0.80,Form("p_{T}^{Z} > %g GeV",ptcutZ));
 
  TCanvas *c4 = new TCanvas();
+ nJetZcutMC->Draw("hist");
+ nJetZcut->Draw("ep same");
+ if(pp) tx->DrawLatex(0.13,0.94,"13 pb^{-1} (pp 5 TeV)");
+ else   tx->DrawLatex(0.13,0.94,"Express (PbPb 5 TeV)");
+ tx->DrawLatex(0.61,0.86,"80 < m^{Z} < 110 GeV");
+ tx->DrawLatex(0.61,0.80,Form("p_{T}^{Z} > %g GeV",ptcutZ));
+ if(pp) tx->DrawLatex(0.61,0.74,"ak4PF jets");
+ else   tx->DrawLatex(0.61,0.74,"akPu4PF jets");
+ tx->DrawLatex(0.61,0.68,"p_{T}^{jet} > 30 GeV");
+ tx->DrawLatex(0.61,0.62,"|#eta^{jet}| < 2.0");
+
+ TCanvas *c5 = new TCanvas();
  dPhiZjetMC->Draw("hist");
  dPhiZjet->Draw("ep same");
  if(pp) tx->DrawLatex(0.13,0.94,"13 pb^{-1} (pp 5 TeV)");
@@ -258,7 +272,7 @@ void ggZjetPlots(bool pp = 1, int mu = 1, float ptcutZ = 40) {
  tx->DrawLatex(0.17,0.62,"|#eta^{jet}| < 2.0");
  //tx->DrawLatex(0.17,0.56,"jet ID");
 
- TCanvas *c5 = new TCanvas();
+ TCanvas *c6 = new TCanvas();
  dEtaZjetMC->Draw("hist");
  dEtaZjet->Draw("ep same");
  if(pp) tx->DrawLatex(0.13,0.94,"13 pb^{-1} (pp 5 TeV)");
@@ -270,10 +284,10 @@ void ggZjetPlots(bool pp = 1, int mu = 1, float ptcutZ = 40) {
  tx->DrawLatex(0.63,0.68,"p_{T}^{jet} > 30 GeV");
  tx->DrawLatex(0.63,0.62,"|#eta^{jet}| < 2.0");
 
- TCanvas *c6 = new TCanvas();
+ TCanvas *c7a = new TCanvas();
  dPhidEta->Draw("colz");
 
- TCanvas *c7 = new TCanvas();
+ TCanvas *c7b = new TCanvas();
  dPhidEtaMC->Draw("colz");
 
  TArrow *arrow = new TArrow();
