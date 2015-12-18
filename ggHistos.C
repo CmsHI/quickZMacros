@@ -65,8 +65,8 @@ void ggHistos(TString infilename="HiForest.root", TString outfilename="Zevents.r
  int Zcharge;
 
  int njet;
- float jetpt[20], jeteta[20], jetphi[20]; 
- int jetID[20];
+ float jetpt[200], jeteta[200], jetphi[200]; 
+ int jetID[200];
 
  TTree *ztree = new TTree("ztree","Z boson candidate events");
  ztree->Branch("run",	&run,	"run/I");
