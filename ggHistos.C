@@ -41,6 +41,34 @@ bool goodElectron(int i) {
  else return false;
 }
 
+bool goodElectronPbPb(int i) {
+ if(fabs(eleSCEta->at(i))<1.479) {
+   if(  fabs(eledEtaAtVtx->at(i))<0.0149
+	&& fabs(eledPhiAtVtx->at(i))<0.0340
+	&& eleSigmaIEtaIEta->at(i)<0.0106
+	&& eleHoverE->at(i)<0.0333
+	&& fabs(eleD0->at(i))<0.016
+	&& fabs(eleDz->at(i))<0.0694
+	&& fabs(eleEoverPInv->at(i))<0.0148
+	&& eleMissHits->at(i) <= 1
+	) return true;
+   else return false;
+ }
+ if(fabs(eleSCEta->at(i))>1.479) {
+   if(  fabs(eledEtaAtVtx->at(i))<0.0086
+	&& fabs(eledPhiAtVtx->at(i))<0.1224
+	&& eleSigmaIEtaIEta->at(i)<0.0299
+	&& eleHoverE->at(i)<0.0927
+	&& fabs(eleD0->at(i))<0.0872
+	&& fabs(eleDz->at(i))<0.2032
+	&& fabs(eleEoverPInv->at(i))<0.1262
+	&& eleMissHits->at(i) <= 1
+	) return true;
+   else return false;
+ }
+ else return false;
+}
+
 bool goodJet(int i) {
   if(	neutralSum[i]/rawpt[i] < 0.9
 	&& chargedSum[i]/rawpt[i] > 0.01
@@ -52,6 +80,16 @@ bool goodJet(int i) {
   else return false;
 }
 
+float findNcoll(int hiBin) {
+
+  float w=1;
+  const int nbins = 20;
+  const float Ncoll[nbins] = {1819, 1433, 1127, 882, 685.2, 526.5, 399.3, 297.5, 217.1, 155.1, 107.9, 73.51, 48.76, 31.46, 19.69, 12.02, 7.042, 3.974, 2.12, 1.164};
+  for(int i=0; i<nbins; i++) if(hiBin>=i*(200/nbins) && hiBin<(i+1)*(200/nbins)) w=Ncoll[i];
+  return w;
+
+}
+
 void ggHistos(TString infilename="HiForest.root", TString outfilename="Zevents.root", bool pp=1) {
 
  float leptonptcut = 20;
@@ -59,20 +97,26 @@ void ggHistos(TString infilename="HiForest.root", TString outfilename="Zevents.r
  TH1::SetDefaultSumw2();
 
  int hiBin;
+ float vz;
+ float weight=1;
+ float weightall=1;
 
  int Ztype; //type 1 muon, type 2 electron
  float Zmass, Zpt, Zeta, Zrapidity, Zphi;
+ float Zlepton1Pt, Zlepton2Pt, Zlepton1Eta, Zlepton2Eta, Zlepton1Phi, Zlepton2Phi;
  int Zcharge;
 
  int njet;
- float jetpt[200], jeteta[200], jetphi[200]; 
- int jetID[200];
+ float jetpt[100], jeteta[100], jetphi[100]; 
+ int jetID[100];
 
  TTree *ztree = new TTree("ztree","Z boson candidate events");
  ztree->Branch("run",	&run,	"run/I");
  ztree->Branch("event",	&event,	"event/I");
  ztree->Branch("lumis",	&lumis,	"lumis/I");
  ztree->Branch("hiBin", &hiBin, "hiBin/I");
+ ztree->Branch("weight", &weight,"weight/F");
+ ztree->Branch("weightall", &weightall,"weightall/F");
  ztree->Branch("Ztype",	&Ztype,	"Ztype/I");
  ztree->Branch("Zmass",	&Zmass,	"Zmass/F");
  ztree->Branch("Zpt",	&Zpt,	"Zpt/F");
@@ -80,6 +124,12 @@ void ggHistos(TString infilename="HiForest.root", TString outfilename="Zevents.r
  ztree->Branch("Zphi",	&Zphi,	"Zphi/F");
  ztree->Branch("Zrapidity",	&Zrapidity,	"Zrapidity/F");
  ztree->Branch("Zcharge",	&Zcharge,	"Zcharge/I");
+ ztree->Branch("Zlepton1Pt",	&Zlepton1Pt,	"Zlepton1Pt/F");
+ ztree->Branch("Zlepton2Pt",	&Zlepton2Pt,	"Zlepton2Pt/F");
+ ztree->Branch("Zlepton1Eta",	&Zlepton1Eta,	"Zlepton1Eta/F");
+ ztree->Branch("Zlepton2Eta",	&Zlepton2Eta,	"Zlepton2Eta/F");
+ ztree->Branch("Zlepton1Phi",	&Zlepton1Phi,	"Zlepton1Phi/F");
+ ztree->Branch("Zlepton2Phi",	&Zlepton2Phi,	"Zlepton2Phi/F");
  ztree->Branch("njet",	&njet,	"njet/I");
  ztree->Branch("jetpt",	&jetpt,	"jetpt[njet]/F");
  ztree->Branch("jeteta",	&jeteta,	"jeteta[njet]/F");
@@ -133,6 +183,8 @@ void ggHistos(TString infilename="HiForest.root", TString outfilename="Zevents.r
     return;
  }
  inevtTree->SetBranchAddress("hiBin", &hiBin);
+ inevtTree->SetBranchAddress("weight", &weight);
+ inevtTree->SetBranchAddress("vz", &vz);
 
  int nEv = inggTree->GetEntries();
 
@@ -142,6 +194,13 @@ void ggHistos(TString infilename="HiForest.root", TString outfilename="Zevents.r
    injetTree->GetEntry(j);
    inevtTree->GetEntry(j);
    if(j%20000 == 0) cout << "Processing event: " << j << endl;
+
+   if(!pp) {
+     float vtxweight = 1.355*exp(-0.5*((vz-0.6682)/7.729)*((vz-0.6682)/7.729));
+     float centweight = findNcoll(hiBin);
+     weightall = weight * vtxweight * centweight;
+   }
+
    bool flagMu = 0; bool flagEle = 0;
 
    TLorentzVector muon1, muon2;
@@ -169,6 +228,12 @@ void ggHistos(TString infilename="HiForest.root", TString outfilename="Zevents.r
 	     Zphi = pair.Phi();
 	     Zcharge = muCharge->at(i1) + muCharge->at(i2);
 	     flagMu = 1;
+	     Zlepton1Pt = muon1.Pt();
+             Zlepton2Pt = muon2.Pt();
+             Zlepton1Eta = muon1.Eta();
+             Zlepton2Eta = muon2.Eta();
+             Zlepton1Phi = muon1.Phi();
+             Zlepton2Phi = muon2.Phi();
 
              if(muCharge->at(i1) != muCharge->at(i2)) {
 		mmMass->Fill(pair.M());
@@ -189,11 +254,17 @@ void ggHistos(TString infilename="HiForest.root", TString outfilename="Zevents.r
 
    for(int i1 = 0; i1 < nEle; i1++) {
 
-    if(elePt->at(i1)>leptonptcut && fabs(eleSCEta->at(i1))<2.5 && goodElectron(i1) && (fabs(eleSCEta->at(i1))<1.4442 || fabs(eleSCEta->at(i1))>1.566)) {
+    if(elePt->at(i1)>leptonptcut && fabs(eleSCEta->at(i1))<2.5 && (fabs(eleSCEta->at(i1))<1.4442 || fabs(eleSCEta->at(i1))>1.566)) {
+
+       if(pp && !goodElectron(i1)) continue;
+       else if(!pp && !goodElectronPbPb(i1)) continue;
 
        for(int i2 = i1+1; i2 < nEle; i2++) {
 
-          if(elePt->at(i2)>leptonptcut && fabs(eleSCEta->at(i2))<2.5 && goodElectron(i2) && (fabs(eleSCEta->at(i2))<1.4442 || fabs(eleSCEta->at(i2))>1.566)) {
+          if(elePt->at(i2)>leptonptcut && fabs(eleSCEta->at(i2))<2.5 && (fabs(eleSCEta->at(i2))<1.4442 || fabs(eleSCEta->at(i2))>1.566)) {
+
+            if(pp && !goodElectron(i2)) continue;
+            else if(!pp && !goodElectronPbPb(i2)) continue;
 
 	    ele1.SetPtEtaPhiM(elePt->at(i1), eleEta->at(i1), elePhi->at(i1), 0.000511);
 	    ele2.SetPtEtaPhiM(elePt->at(i2), eleEta->at(i2), elePhi->at(i2), 0.000511);
@@ -209,6 +280,12 @@ void ggHistos(TString infilename="HiForest.root", TString outfilename="Zevents.r
 	     Zphi = pair.Phi();
 	     Zcharge = eleCharge->at(i1) + eleCharge->at(i2);
 	     flagEle = 1;
+             Zlepton1Pt = ele1.Pt();
+             Zlepton2Pt = ele2.Pt();
+             Zlepton1Eta = ele1.Eta();
+             Zlepton2Eta = ele2.Eta();
+             Zlepton1Phi = ele1.Phi();
+             Zlepton2Phi = ele2.Phi();
 
              if(eleCharge->at(i1) != eleCharge->at(i2)) {
 		eeMass->Fill(pair.M());
