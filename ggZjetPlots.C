@@ -1,3 +1,4 @@
+#include "commonFunctions.h"
 #include "ggTree.h"
 
 int hiBin;

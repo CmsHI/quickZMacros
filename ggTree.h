@@ -1,38 +1,3 @@
-#include "TROOT.h"
-#include "TChain.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TF1.h"
-#include "TStyle.h"
-#include "TLine.h"
-#include "TCanvas.h"
-#include "TGraphErrors.h"
-#include "TGraphAsymmErrors.h"
-#include "TLorentzVector.h"
-#include "TClonesArray.h"
-#include "TLegend.h"
-#include "TPaveStats.h"
-#include "TLatex.h"
-#include "TArrow.h"
-
-#include <iostream>
-#include <vector>
-
-const double pi = 3.14159265358979323846;
-
-using namespace std;
-
-float getDphi(float phi1, float phi2) {
-  float dphi = phi1 - phi2;
-  if ( dphi > pi )
-    dphi = dphi - 2.*pi;
-  if ( dphi <= -pi ) 
-    dphi = dphi + 2.*pi;
-  return dphi;
-}
-
 //variables branches in ggNtuple
    UInt_t           run;
    ULong64_t        event;
