@@ -1,3 +1,4 @@
+#include "commonFunctions.h"
 #include "ggTree.h"
 #include "jetTree.h"
 
@@ -78,16 +79,6 @@ bool goodJet(int i) {
 	&& eSum[i]/rawpt[i] < 0.99
 	) return true;
   else return false;
-}
-
-float findNcoll(int hiBin) {
-
-  float w=1;
-  const int nbins = 20;
-  const float Ncoll[nbins] = {1819, 1433, 1127, 882, 685.2, 526.5, 399.3, 297.5, 217.1, 155.1, 107.9, 73.51, 48.76, 31.46, 19.69, 12.02, 7.042, 3.974, 2.12, 1.164};
-  for(int i=0; i<nbins; i++) if(hiBin>=i*(200/nbins) && hiBin<(i+1)*(200/nbins)) w=Ncoll[i];
-  return w;
-
 }
 
 void ggHistos(TString infilename="HiForest.root", TString outfilename="Zevents.root", bool pp=1) {
@@ -196,7 +187,7 @@ void ggHistos(TString infilename="HiForest.root", TString outfilename="Zevents.r
    if(j%20000 == 0) cout << "Processing event: " << j << endl;
 
    if(!pp) {
-     float vtxweight = 1.355*exp(-0.5*((vz-0.6682)/7.729)*((vz-0.6682)/7.729));
+     float vtxweight = findVertexWeightPbPb(vz);
      float centweight = findNcoll(hiBin);
      weightall = weight * vtxweight * centweight;
    }
